@@ -10,34 +10,33 @@
 //
 
 #import "YYTextAsyncLayer.h"
-#import <libkern/OSAtomic.h>
-
+#import <stdatomic.h>
+#if __has_include(<YYDispatchQueuePool/YYDispatchQueuePool.h>)
+#import <YYDispatchQueuePool/YYDispatchQueuePool.h>
+#endif
 
 /// Global display queue, used for content rendering.
 static dispatch_queue_t YYTextAsyncLayerGetDisplayQueue() {
+#if __has_include(<YYDispatchQueuePool/YYDispatchQueuePool.h>)
+    return YYDispatchQueueGetForQOS(NSQualityOfServiceUserInitiated);
+#else
 #define MAX_QUEUE_COUNT 16
     static int queueCount;
     static dispatch_queue_t queues[MAX_QUEUE_COUNT];
     static dispatch_once_t onceToken;
-    static int32_t counter = 0;
+    static atomic_uint_fast32_t counter = ATOMIC_VAR_INIT(0);
     dispatch_once(&onceToken, ^{
         queueCount = (int)[NSProcessInfo processInfo].activeProcessorCount;
         queueCount = queueCount < 1 ? 1 : queueCount > MAX_QUEUE_COUNT ? MAX_QUEUE_COUNT : queueCount;
-        if ([UIDevice currentDevice].systemVersion.floatValue >= 8.0) {
-            for (NSUInteger i = 0; i < queueCount; i++) {
-                dispatch_queue_attr_t attr = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INITIATED, 0);
-                queues[i] = dispatch_queue_create("com.ibireme.text.render", attr);
-            }
-        } else {
-            for (NSUInteger i = 0; i < queueCount; i++) {
-                queues[i] = dispatch_queue_create("com.ibireme.text.render", DISPATCH_QUEUE_SERIAL);
-                dispatch_set_target_queue(queues[i], dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0));
-            }
+        for (NSUInteger i = 0; i < queueCount; i++) {
+            dispatch_queue_attr_t attr = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INITIATED, 0);
+            queues[i] = dispatch_queue_create("com.ibireme.text.render", attr);
         }
     });
-    uint32_t cur = (uint32_t)OSAtomicIncrement32(&counter);
+    uint32_t cur = (uint32_t)atomic_fetch_add(&counter, 1);
     return queues[(cur) % queueCount];
 #undef MAX_QUEUE_COUNT
+#endif
 }
 
 static dispatch_queue_t YYTextAsyncLayerGetReleaseQueue() {
@@ -58,13 +57,24 @@ static dispatch_queue_t YYTextAsyncLayerGetReleaseQueue() {
 @end
 
 @implementation _YYTextSentinel {
-    int32_t _value;
+    atomic_uint_fast32_t _value;
 }
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _value = ATOMIC_VAR_INIT(0);
+    }
+    return self;
+}
+
 - (int32_t)value {
-    return _value;
+    return (int32_t)atomic_load(&_value);
 }
 - (int32_t)increase {
-    return OSAtomicIncrement32(&_value);
+    int32_t old = (int32_t)atomic_fetch_add(&_value, 1);
+    return (old + 1);
 }
 @end
 
@@ -130,7 +140,7 @@ static dispatch_queue_t YYTextAsyncLayerGetReleaseQueue() {
         if (task.willDisplay) task.willDisplay(self);
         _YYTextSentinel *sentinel = _sentinel;
         int32_t value = sentinel.value;
-        BOOL (^isCancelled)() = ^BOOL() {
+        BOOL (^isCancelled)(void) = ^BOOL() {
             return value != sentinel.value;
         };
         CGSize size = self.bounds.size;

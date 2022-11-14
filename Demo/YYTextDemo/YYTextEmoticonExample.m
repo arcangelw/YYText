@@ -24,9 +24,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    if ([self respondsToSelector:@selector(setAutomaticallyAdjustsScrollViewInsets:)]) {
-        self.automaticallyAdjustsScrollViewInsets = NO;
-    }
     
     NSMutableDictionary *mapper = [NSMutableDictionary new];
     mapper[@":smile:"] = [self imageWithName:@"002"];
@@ -51,9 +48,7 @@
     textView.linePositionModifier = mod;
     textView.textContainerInset = UIEdgeInsetsMake(10, 10, 10, 10);
     textView.delegate = self;
-    if (kiOS7Later) {
-        textView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
-    }
+    textView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     textView.contentInset = UIEdgeInsetsMake(64, 0, 0, 0);
     textView.scrollIndicatorInsets = textView.contentInset;
     [self.view addSubview:textView];

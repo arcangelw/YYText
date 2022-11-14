@@ -20,10 +20,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    if ([self respondsToSelector:@selector(setAutomaticallyAdjustsScrollViewInsets:)]) {
-        self.automaticallyAdjustsScrollViewInsets = NO;
-    }
-    
     NSMutableAttributedString *text = [NSMutableAttributedString new];
     NSArray *tags = @[@"◉red", @"◉orange", @"◉yellow", @"◉green", @"◉blue", @"◉purple", @"◉gray"];
     NSArray *tagStrokeColors = @[
@@ -82,11 +78,7 @@
     textView.allowsCopyAttributedString = YES;
     textView.allowsPasteAttributedString = YES;
     textView.delegate = self;
-    if (kiOS7Later) {
-        textView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
-    } else {
-        textView.height -= 64;
-    }
+    textView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     textView.scrollIndicatorInsets = textView.contentInset;
     textView.selectedRange = NSMakeRange(text.length, 0);
     [self.view addSubview:textView];

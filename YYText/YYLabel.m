@@ -14,11 +14,17 @@
 #import "YYTextWeakProxy.h"
 #import "YYTextUtilities.h"
 #import "NSAttributedString+YYText.h"
-#import <libkern/OSAtomic.h>
+#if __has_include(<YYDispatchQueuePool/YYDispatchQueuePool.h>)
+#import <YYDispatchQueuePool/YYDispatchQueuePool.h>
+#endif
 
 
 static dispatch_queue_t YYLabelGetReleaseQueue() {
+#if __has_include(<YYDispatchQueuePool/YYDispatchQueuePool.h>)
+    return YYDispatchQueueGetForQOS(NSQualityOfServiceDefault);
+#else
     return dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
+#endif
 }
 
 

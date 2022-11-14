@@ -24,10 +24,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    if ([self respondsToSelector:@selector(setAutomaticallyAdjustsScrollViewInsets:)]) {
-        self.automaticallyAdjustsScrollViewInsets = NO;
-    }
-    
     
     NSString *text = @"You can shake the device to undo and redo.";
     
@@ -39,9 +35,7 @@
     textView.delegate = self;
     textView.allowsUndoAndRedo = YES; /// Undo and Redo
     textView.maximumUndoLevel = 10; /// Undo level
-    if (kiOS7Later) {
-        textView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
-    }
+    textView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     textView.contentInset = UIEdgeInsetsMake(64, 0, 0, 0);
     textView.scrollIndicatorInsets = textView.contentInset;
     [self.view addSubview:textView];

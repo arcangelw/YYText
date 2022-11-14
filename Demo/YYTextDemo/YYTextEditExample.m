@@ -32,20 +32,12 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    if ([self respondsToSelector:@selector(setAutomaticallyAdjustsScrollViewInsets:)]) {
-        self.automaticallyAdjustsScrollViewInsets = NO;
-    }
     [self initImageView];
     __weak typeof(self) _self = self;
     
-    UIView *toolbar;
-    if ([UIVisualEffectView class]) {
-        toolbar = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight]];
-    } else {
-        toolbar = [UIToolbar new];
-    }
+    UIVisualEffectView *toolbar = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight]];
     toolbar.size = CGSizeMake(kScreenWidth, 40);
-    toolbar.top = kiOS7Later ? 64 : 0;
+    toolbar.top = 64;
     [self.view addSubview:toolbar];
     
     NSMutableAttributedString *text = [[NSMutableAttributedString alloc] initWithString:@"It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the season of light, it was the season of darkness, it was the spring of hope, it was the winter of despair, we had everything before us, we had nothing before us. We were all going direct to heaven, we were all going direct the other way.\n\n这是最好的时代，这是最坏的时代；这是智慧的时代，这是愚蠢的时代；这是信仰的时期，这是怀疑的时期；这是光明的季节，这是黑暗的季节；这是希望之春，这是失望之冬；人们面前有着各样事物，人们面前一无所有；人们正在直登天堂，人们正在直下地狱。"];
@@ -58,11 +50,7 @@
     textView.size = self.view.size;
     textView.textContainerInset = UIEdgeInsetsMake(10, 10, 10, 10);
     textView.delegate = self;
-    if (kiOS7Later) {
-        textView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
-    } else {
-        textView.height -= 64;
-    }
+    textView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     textView.contentInset = UIEdgeInsetsMake(toolbar.bottom, 0, 0, 0);
     textView.scrollIndicatorInsets = textView.contentInset;
     textView.selectedRange = NSMakeRange(text.length, 0);
@@ -83,7 +71,7 @@
     label.text = @"Vertical:";
     label.size = CGSizeMake([label.text widthForFont:label.font] + 2, toolbar.height);
     label.left = 10;
-    [toolbar addSubview:label];
+    [toolbar.contentView addSubview:label];
     
     _verticalSwitch = [UISwitch new];
     [_verticalSwitch sizeToFit];
@@ -99,7 +87,7 @@
         _self.exclusionSwitch.enabled = !switcher.isOn;
         _self.textView.verticalForm = switcher.isOn; /// Set vertical form
     }];
-    [toolbar addSubview:_verticalSwitch];
+    [toolbar.contentView addSubview:_verticalSwitch];
     
     label = [UILabel new];
     label.backgroundColor = [UIColor clearColor];
@@ -107,7 +95,7 @@
     label.text = @"Debug:";
     label.size = CGSizeMake([label.text widthForFont:label.font] + 2, toolbar.height);
     label.left = _verticalSwitch.right + 5;
-    [toolbar addSubview:label];
+    [toolbar.contentView addSubview:label];
     
     _debugSwitch = [UISwitch new];
     [_debugSwitch sizeToFit];
@@ -118,7 +106,7 @@
     [_debugSwitch addBlockForControlEvents:UIControlEventValueChanged block:^(UISwitch *switcher) {
         [YYTextExampleHelper setDebug:switcher.isOn];
     }];
-    [toolbar addSubview:_debugSwitch];
+    [toolbar.contentView addSubview:_debugSwitch];
     
     label = [UILabel new];
     label.backgroundColor = [UIColor clearColor];
@@ -126,7 +114,7 @@
     label.text = @"Exclusion:";
     label.size = CGSizeMake([label.text widthForFont:label.font] + 2, toolbar.height);
     label.left = _debugSwitch.right + 5;
-    [toolbar addSubview:label];
+    [toolbar.contentView addSubview:label];
     
     _exclusionSwitch = [UISwitch new];
     [_exclusionSwitch sizeToFit];
@@ -136,7 +124,7 @@
     [_exclusionSwitch addBlockForControlEvents:UIControlEventValueChanged block:^(UISwitch *switcher) {
         [_self setExclusionPathEnabled:switcher.isOn];
     }];
-    [toolbar addSubview:_exclusionSwitch];
+    [toolbar.contentView addSubview:_exclusionSwitch];
     
     
     [[YYTextKeyboardManager defaultManager] addObserver:self];
